@@ -23,7 +23,7 @@ class WordsDict(dict):
         if not isinstance(filename,str):
             raise TypeError("Bad type of filename")
 
-        with open(filename, 'w' ,encoding="utf-8") as f:
+        with open(filename, 'r' ,encoding="utf-8") as f:
             json.dump(self, f, indent = 2) 
 
 
