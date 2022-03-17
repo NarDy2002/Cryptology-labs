@@ -1,120 +1,107 @@
 
 import sys
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QTableWidgetItem
-from PyQt6.QtCore import Qt,QSize
+import os
 
-from frequency import WordsDict
+from PyQt6.QtWidgets import (
+    QApplication,QMainWindow, QWidget,
+    QStackedLayout,QVBoxLayout,QHBoxLayout,
+    QTableWidget,QLabel,QTextEdit,
+)
 
-frequency_dict = WordsDict()
-frequency_dict.fill_from_file("words.txt")
+from PyQt6.QtCore import (
+    QSize
+)
+
+from PyQt6.QtGui import (
+    QAction
+)
 
 
-class FrequencyTable(QtWidgets.QTableWidget):
+import lab1_frequency_analysis.widget
+
+
+class FirstEncryptionWidget(QWidget):
     def __init__(self):
         super().__init__()
-
-        self._data = frequency_dict.items()
-        self._order = Qt.SortOrder.DescendingOrder
-
-        self.setColumnCount(2)
-        self.setRowCount(len(self._data))
-
-        self.setHorizontalHeaderLabels(["Letter","Frequency"])
-        self.set_items()
-        self.resizeColumnsToContents()
     
+        layout = QVBoxLayout()
+ 
+        label = QLabel("Insert Encyption widget")
+        
+        message_field = QTextEdit()
+        message_field.setText("This is example of message text....")
 
-    def set_items(self):
-        for i,(letter,frequency) in enumerate(self._data):
-            self.setItem(i,0,QTableWidgetItem(letter))
-            self.setItem(i,1,QTableWidgetItem(str(frequency)))
+        encrypted_field = QTextEdit()
+        encrypted_field.setText("This is example of an encrypted text....")
 
-   
-    def change_order_of_sorting(self):
-        if self._order == Qt.SortOrder.DescendingOrder:
-            self._order = Qt.SortOrder.AscendingOrder
-        else:
-            self._order = Qt.SortOrder.DescendingOrder
+        layout.addWidget(label)
+        layout.addWidget(message_field)
+        layout.addWidget(encrypted_field)
+        
+        self.setLayout(layout)
 
-    def sortByLetter(self):
-        self.change_order_of_sorting()
-        self.sortByColumn(0,self._order)
-        self.change_order_of_sorting()
 
-    def sortByFrequency(self):
-        self.sortByColumn(1,self._order)
-           
+class MainWindow(QMainWindow):
+    """
+    Main window
+    Contains stacked layout widget with menu bar
 
-    
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    """
+    def __init__(self) -> None:
         super().__init__()
 
-        self.setWindowTitle("Frequency Analysis")
-        self.setFixedSize(QSize(460,200))
-
-        main_layout = QtWidgets.QHBoxLayout()
-
-        buttons_layout = QtWidgets.QVBoxLayout()
-
-        self._open_file = QtWidgets.QPushButton("Open file")
-        self._about = QtWidgets.QPushButton("About")
-        self._order = QtWidgets.QCheckBox("Sort in descending order")
-        self._sort_by_letter = QtWidgets.QPushButton("Sort by alphabet")
-        self._sort_by_frequency = QtWidgets.QPushButton("Sort by frequency")
+        self._widgets = dict()
         
-        self._table = FrequencyTable()
+        self.setWindowTitle("Cryptology laboratory")
 
-        self._sort_by_frequency.setCheckable(True)
-        self._sort_by_letter.setCheckable(True)
-
-        self._sort_by_frequency.clicked.connect(self.frequency_button_pressed)
-        self._sort_by_letter.clicked.connect(self.letter_button_pressed)
-        
-
-
-        self._order.setCheckable(True)
-        self._order.setCheckState(Qt.CheckState.Checked)
-        self._order.stateChanged.connect(self._table.change_order_of_sorting)
-        
-
-
-        buttons_layout.addWidget(self._open_file)
-        buttons_layout.addWidget(self._about)
-        buttons_layout.addWidget(self._order)
-        buttons_layout.addWidget(self._sort_by_letter)
-        buttons_layout.addWidget(self._sort_by_frequency)
-
-
-        main_layout.addLayout(buttons_layout)
-        main_layout.addWidget(self._table)
-
-
-        main_widget = QtWidgets.QWidget()
-        main_widget.setLayout(main_layout)
-
+        self.layout = QStackedLayout()
+        main_widget = QWidget()
+        main_widget.setLayout(self.layout)
         self.setCentralWidget(main_widget)
 
+        # Widgets
+
+        self.initWidgets()
+        self.setupLayout()
+
+        # Menu Bar
+        menu = self.menuBar()
+
+        # Actions
+        freq_analysis_action = QAction("Frequency analysis",self)
+        first_encryption_action = QAction("Simple encryption",self)
+
+        encryption_menu = menu.addMenu("Encrypt")
+        encryption_menu.addAction(first_encryption_action)
+        menu.addAction(freq_analysis_action)
+
+        # Triggers for layouts
+        freq_analysis_action.triggered.connect(self.activateFreqAnalysis)
+        first_encryption_action.triggered.connect(self.activateFirstEncryption)
 
 
-    def letter_button_pressed(self):
-        self._table.sortByLetter()
-        self._sort_by_letter.setChecked(False)
+    def initWidgets(self):
+        self._widgets["Frequency analysis"] = lab1_frequency_analysis.widget.MainWidget()
+        self._widgets["Insertion encryption"] = FirstEncryptionWidget()
     
+    def setupLayout(self):
+        for widget_name in self._widgets.keys():
+            self.layout.addWidget(self._widgets[widget_name])
 
-    def frequency_button_pressed(self):
-        self._table.sortByFrequency()
-        self._sort_by_frequency.setChecked(False)
 
-    
+    def activateFreqAnalysis(self):
+        self.layout.setCurrentIndex(0)
+
+
+    def activateFirstEncryption(self):
+        self.layout.setCurrentIndex(1)
 
 
 
 
 
 def main():
-    app=QtWidgets.QApplication(sys.argv)
+    app=QApplication(sys.argv)
     window=MainWindow()
     window.show()
     app.exec()  
