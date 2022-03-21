@@ -4,19 +4,16 @@ import random
 from collections import Counter
 
 
+ALPHABET = string.ascii_letters + string.punctuation + " "
+
 class SimpleReplacementEncrypter:
 
-    def __init__(self, alphabet:str = string.ascii_letters, key:str = None) -> None:
+    def __init__(self, alphabet:str = ALPHABET, key:str = None) -> None:
 
-        if is_set_of_chars(alphabet):
-            self._alphabet = alphabet
-        else:
-            raise ValueError("Wrong alphabet")
+        self._alphabet = alphabet
+        self._key = None        
 
-        if self.check_key_correctness(key):
-            self._key = key
-        else:
-            self._key = None
+        self.key = key
 
         if self._key == None:
             self.generate_key()
@@ -25,6 +22,16 @@ class SimpleReplacementEncrypter:
     @property
     def key(self):
         return self._key
+
+
+    @key.setter
+    def key(self,value:str):
+        if self.check_key_correctness(value):
+            self._key = value
+
+    @property
+    def alphabet(self):
+        return self._alphabet
 
 
     def generate_key(self):
@@ -83,6 +90,11 @@ def main():
     encrypter.generate_key()
 
     encrypted = encrypter.encrypt(message)
+
+    
+    print("Alphabet:    "+ encrypter.alphabet)
+    print("Key:         "+ encrypter.key)
+    print(message)
     print(encrypted)
     print(encrypter.decrypt(encrypted))
     
