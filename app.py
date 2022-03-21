@@ -18,6 +18,7 @@ from PyQt6.QtGui import (
 
 
 import lab1_frequency_analysis.widget
+import lab2_simple_replacement.widget
 
 
 class FirstEncryptionWidget(QWidget):
@@ -82,7 +83,7 @@ class MainWindow(QMainWindow):
 
     def initWidgets(self):
         self._widgets["Frequency analysis"] = lab1_frequency_analysis.widget.MainWidget()
-        self._widgets["Insertion encryption"] = FirstEncryptionWidget()
+        self._widgets["Insertion encryption"] = lab2_simple_replacement.widget.MainWidget()
     
     def setupLayout(self):
         for widget_name in self._widgets.keys():
